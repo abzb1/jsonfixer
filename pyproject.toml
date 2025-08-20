@@ -1,0 +1,38 @@
+[project]
+name = "jsonfixer"
+version = "0.1.0"
+description = "Fixer for broken/unescaped quotes in pseudo-JSON text"
+readme = "README.md"
+authors = [
+    { name = "Hongseok Oh", email = "cxv0519@gmail.com" },
+]
+requires-python = ">=3.8"
+license = { text = "MIT" }
+keywords = ["json", "repair", "quotes", "fix", "pseudo-json", "structured output"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+[project.urls]
+Homepage = "https://github.com/abzb1/jsonfixer"
+Issues = "https://github.com/abzb1/jsonfixer/issues"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.sdist]
+include = ["src/jsonfixer", "README.md", "LICENSE", "tests"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/jsonfixer"]
