@@ -19,8 +19,8 @@ def replace_smart_quotes(s: str) -> str:
 
 def fix_quotes(
         s: str,
-        parse_code: bool = True,
-        replace_smart: bool = True,
+        parse_code: bool = False,
+        replace_smart: bool = False,
     ) -> str:
 
     if parse_code:
