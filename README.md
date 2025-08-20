@@ -17,11 +17,14 @@ The snippet above will raise a JSONDecodeError because of the invalid quoting.
 
 ## Usage
 
+### Installation
+
 `pip install jsonquotefixer`
 
 jsonfixer automatically fixes broken quotation marks, allowing the JSON to be safely parsed with Python’s built-in json module.
 
-Example usage:
+### Example
+
 ```python
 import json
 from jsonfixer import fix_quotes
