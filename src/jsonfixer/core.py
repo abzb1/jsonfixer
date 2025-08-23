@@ -85,6 +85,27 @@ def fix_quotes(
     def is_nonstring_value_start(ch: str):
         return ch.isdigit() or ch in "-tfn"
 
+    def looks_like_next_obj_key(start_idx: int) -> bool:
+        k = next_non_space(start_idx)
+        if k < n and s[k] == '"':
+            k += 1
+            escaped_ = False
+            
+            while k < n:
+                c = s[k]
+                if escaped_:
+                    escaped_ = False
+                elif c == '\\':
+                    escaped_ = True
+                elif c == '"':
+                    k += 1
+                    break
+                k += 1
+            k = next_non_space(k)
+            return k < n and s[k] == ':'
+        
+        return False
+
     i, n = 0, len(s)
     while i < n:
         ch = s[i]
@@ -169,6 +190,38 @@ def fix_quotes(
             i += 1
             continue
 
+        if ch == "\r":
+            if i + 1 < n and s[i + 1] == "\n":
+                i += 1
+            out.append("\\n")
+            i += 1
+            continue
+
+        if ch == "\n":
+            out.append("\\n")
+            i += 1
+            continue
+
+        if ch == "\t":
+            out.append("\\t")
+            i += 1
+            continue
+
+        if ch == "\b":
+            out.append("\\b")
+            i += 1
+            continue
+
+        if ch == "\f":
+            out.append("\\f")
+            i += 1
+            continue
+
+        if ord(ch) < 0x20:
+            out.append("\\u%04x" % ord(ch))
+            i += 1
+            continue
+
         if ch == "\\":
             out.append(ch)
             escaped = True
@@ -178,14 +231,28 @@ def fix_quotes(
         if ch == '"':
             if in_value_string:
                 j = next_non_space(i + 1)
-                if j >= n or s[j] in ",]}":
+                if j >= n or s[j] in "]}":
+                    
                     out.append('"')
                     in_string = False
                     in_value_string = False
                     i += 1
                     value_finished()
                     continue
-
+                if s[j] == ',':
+                    
+                    if in_obj() and looks_like_next_obj_key(j + 1):
+                        out.append('"')
+                        in_string = False
+                        in_value_string = False
+                        i += 1
+                        value_finished()
+                        continue
+                    else:
+                        out.append('\\"')
+                        i += 1
+                        continue
+                    
                 out.append('\\"')
                 i += 1
                 continue
