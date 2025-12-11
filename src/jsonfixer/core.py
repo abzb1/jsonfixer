@@ -15,9 +15,9 @@ def replace_smart_quotes(s: str) -> str:
     
     return (
         s.replace("“", '"')
-         .replace("”", '"')
-         .replace("‘", "'")
-         .replace("’", "'")
+        .replace("”", '"')
+        .replace("‘", "'")
+        .replace("’", "'")
     )
 
 

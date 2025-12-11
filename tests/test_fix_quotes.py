@@ -6,7 +6,10 @@ def test_trailing_quote_in_value():
     s = '{"a": "hello "world"}'
     out = fix_quotes(s)
 
-    print(json.loads(out))
+    try:
+        json.loads(out)
+    except json.JSONDecodeError:
+        assert False, "Failed to parse JSON"
 
     assert '\\"' in out or out != s
 
@@ -14,6 +17,7 @@ def test_valid_json_unchanged():
     s = '{"a": "b", "n": 1, "ok": true, "arr": ["x", "y"]}'
     out = fix_quotes(s)
 
+    assert out == s
     assert json.dumps(json.loads(out), ensure_ascii=False) == json.dumps(json.loads(s), ensure_ascii=False)
 
 def test_list():
@@ -25,8 +29,7 @@ def test_list():
     assert out.startswith("[")
     assert out.endswith("]")
     try:
-        print(json.loads(out))
-        print(json.loads(out).__class__)
+        json.loads(out)
     except json.JSONDecodeError:
         assert False, "Failed to parse JSON"
 
