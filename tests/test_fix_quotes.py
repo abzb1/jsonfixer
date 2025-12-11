@@ -33,7 +33,21 @@ def test_list():
     except json.JSONDecodeError:
         assert False, "Failed to parse JSON"
 
+def test_escaped_list():
+
+    aaa = """
+```json\\n["qq","ww","ee","rr","aa"]\\n```
+"""
+    out = fix_quotes(aaa, parse_code=True, replace_smart=True)
+    assert out.startswith("[")
+    assert out.endswith("]")
+    try:
+        json.loads(out)
+    except json.JSONDecodeError:
+        assert False, "Failed to parse JSON"
+
 if __name__ == "__main__":
     test_trailing_quote_in_value()
     test_valid_json_unchanged()
     test_list()
+    test_escaped_list()
