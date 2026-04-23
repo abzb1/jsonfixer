@@ -1,125 +1,99 @@
-import re
 import json
+import re
+
+_CODEBLOCK_RE = re.compile(r"```(?:\w+)?\n(.*?)```", re.DOTALL)
+_CODEBLOCK_ESCAPED_RE = re.compile(r"```(?:\w+)?\\n(.*?)```", re.DOTALL)
+
+_SMART_QUOTES = str.maketrans(
+    {
+        "\u201c": '"',
+        "\u201d": '"',
+        "\u2018": "'",
+        "\u2019": "'",
+    }
+)
+
+_CONTROL_ESCAPES = {
+    "\n": "\\n",
+    "\t": "\\t",
+    "\b": "\\b",
+    "\f": "\\f",
+}
+
+_VALUE_TERMINATORS = frozenset(",}]:")
 
 
 def parse_codeblock(s: str) -> str | None:
-    
-    pattern = re.compile(r"```(\w+)?\n(.*?)```", re.DOTALL)
-    match = pattern.search(s)
+    match = _CODEBLOCK_RE.search(s)
     if match:
-        return match.group(2).strip()
-    
-    pattern_escaped = re.compile(r"```(\w+)?\\n(.*?)```", re.DOTALL)
-    match = pattern_escaped.search(s)
+        return match.group(1).strip()
+
+    match = _CODEBLOCK_ESCAPED_RE.search(s)
     if match:
-        
-        inner = match.group(2)
-        
+        inner = match.group(1)
         try:
-            inner_unescaped = inner.encode("utf-8").decode("unicode_escape")
+            inner = inner.encode("utf-8").decode("unicode_escape")
         except UnicodeDecodeError:
-            inner_unescaped = inner
-        return inner_unescaped.strip()
+            pass
+        return inner.strip()
 
     return None
 
 
 def replace_smart_quotes(s: str) -> str:
-    
-    return (
-        s.replace("“", '"')
-         .replace("”", '"')
-         .replace("‘", "'")
-         .replace("’", "'")
-    )
+    return s.translate(_SMART_QUOTES)
 
 
 def _fix_inner_json_quotes(s: str) -> str:
-
     out: list[str] = []
-    i = 0
     n = len(s)
+    i = 0
     in_string = False
-    escaped = False
-
-    def next_non_space(idx: int) -> int:
-        while idx < n and s[idx].isspace():
-            idx += 1
-        return idx
 
     while i < n:
         ch = s[i]
 
         if not in_string:
-            if ch.isspace():
-                out.append(ch)
-                i += 1
-                continue
-
+            out.append(ch)
             if ch == '"':
                 in_string = True
-                escaped = False
-                out.append('"')
+            i += 1
+            continue
+
+        if ch == "\\":
+            out.append(ch)
+            if i + 1 < n:
+                out.append(s[i + 1])
+                i += 2
+            else:
                 i += 1
-                continue
-
-            out.append(ch)
-            i += 1
-            continue
-
-        if escaped:
-            out.append(ch)
-            escaped = False
-            i += 1
-            continue
-
-        if ch == '\\':
-            out.append(ch)
-            escaped = True
-            i += 1
             continue
 
         if ch == "\r":
-            if i + 1 < n and s[i + 1] == "\n":
-                i += 1
             out.append("\\n")
+            i += 2 if i + 1 < n and s[i + 1] == "\n" else 1
+            continue
+
+        escape = _CONTROL_ESCAPES.get(ch)
+        if escape is not None:
+            out.append(escape)
             i += 1
             continue
 
-        if ch == "\n":
-            out.append("\\n")
+        if ch < "\x20":
+            out.append(f"\\u{ord(ch):04x}")
             i += 1
             continue
 
-        if ch == "\t":
-            out.append("\\t")
-            i += 1
-            continue
-
-        if ch == "\b":
-            out.append("\\b")
-            i += 1
-            continue
-
-        if ch == "\f":
-            out.append("\\f")
-            i += 1
-            continue
-
-        if ord(ch) < 0x20:
-            out.append("\\u%04x" % ord(ch))
-            i += 1
-            continue
-        
         if ch == '"':
-            j = next_non_space(i + 1)
-            
-            if j >= n or s[j] in ',}]:':
+            j = i + 1
+            while j < n and s[j].isspace():
+                j += 1
+            if j >= n or s[j] in _VALUE_TERMINATORS:
                 in_string = False
                 out.append('"')
             else:
                 out.append('\\"')
-
             i += 1
             continue
 
@@ -142,7 +116,6 @@ def fix_quotes(
             except json.JSONDecodeError:
                 pass
 
-    if parse_code:
         code = parse_codeblock(s)
         if code is not None:
             s = code

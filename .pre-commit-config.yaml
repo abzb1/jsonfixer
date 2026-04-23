@@ -1,0 +1,19 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.7
+    hooks:
+      - id: ruff-check
+        types_or: [python]
+        args:
+          - --fix
+          - --exit-non-zero-on-fix
+          - --select=E,F,I
+          - --ignore=E501
+        language_version: python3
+
+  - repo: https://github.com/psf/black
+    rev: 26.3.1
+    hooks:
+      - id: black
+        language_version: python3
+        args: ["--line-length=79"]

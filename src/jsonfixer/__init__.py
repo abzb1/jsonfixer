@@ -9,4 +9,4 @@ __all__ = [
     "parse_codeblock",
     "replace_smart_quotes",
 ]
-__version__ = "0.1.0"
+__version__ = "0.3.0"
