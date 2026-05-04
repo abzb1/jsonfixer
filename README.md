@@ -152,3 +152,18 @@ pre-commit run --all-files
 ## License
 
 MIT — see [LICENSE](LICENSE).
+
+## Citation
+
+If you use this repository in your research, please cite it as follows:
+
+```bibtex
+@misc{
+    oh2025jsonfixer,
+    author = {Oh, Hongseok},
+    title = {jsonfixer: A Utility for Fixing Invalid JSON Outputs},
+    year = {2025},
+    howpublished = {https://github.com/abzb1/jsonfixer},
+    note = {GitHub repository}
+}
+```
